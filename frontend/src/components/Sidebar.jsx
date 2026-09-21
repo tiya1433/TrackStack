@@ -25,6 +25,11 @@ const navigation = [
     path: "/tasks",
   },
   {
+    name: "AI Assistant",
+    icon: Sparkles,
+    path: "/ai",
+  },
+  {
     name: "Profile",
     icon: User,
     path: "/profile",
@@ -42,8 +47,9 @@ function Sidebar({ isOpen, onClose }) {
       )}
 
       <aside
-        className={`fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-white/[0.08] bg-[#080a10]/80 backdrop-blur-2xl transition-transform duration-300 lg:static lg:translate-x-0 ${isOpen ? "translate-x-0" : "-translate-x-full"
-          }`}
+        className={`fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-white/[0.08] bg-[#080a10]/80 backdrop-blur-2xl transition-transform duration-300 lg:static lg:translate-x-0 ${
+          isOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
       >
         {/* Logo */}
         <div className="flex h-16 items-center justify-between border-b border-white/[0.08] px-5">
@@ -88,9 +94,10 @@ function Sidebar({ isOpen, onClose }) {
                 to={item.path}
                 onClick={onClose}
                 className={({ isActive }) =>
-                  `group relative flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium transition-all duration-300 ${isActive
-                    ? "bg-indigo-500/10 text-indigo-300"
-                    : "text-slate-500 hover:bg-white/[0.04] hover:text-slate-200"
+                  `group relative flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium transition-all duration-300 ${
+                    isActive
+                      ? "bg-indigo-500/10 text-indigo-300"
+                      : "text-slate-500 hover:bg-white/[0.04] hover:text-slate-200"
                   }`
                 }
               >

@@ -1,27 +1,64 @@
 import { useEffect, useState } from "react";
 import { X } from "lucide-react";
+
 import api from "../api/axios";
 
-function CreateTaskModal({ onClose, onTaskCreated }) {
-  const [taskTitle, setTaskTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [projectId, setProjectId] = useState("");
-  const [priority, setPriority] = useState("medium");
+function EditTaskModal({
+  task,
+  onClose,
+  onTaskUpdated,
+}) {
+  const [title, setTitle] = useState("");
+  const [description, setDescription] =
+    useState("");
+  const [projectId, setProjectId] =
+    useState("");
+  const [priority, setPriority] =
+    useState("medium");
+  const [status, setStatus] =
+    useState("todo");
 
-  const [projects, setProjects] = useState([]);
-  const [loadingProjects, setLoadingProjects] = useState(true);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [projects, setProjects] =
+    useState([]);
+
+  const [loadingProjects, setLoadingProjects] =
+    useState(true);
+
+  const [loading, setLoading] =
+    useState(false);
+
+  const [error, setError] =
+    useState("");
+
+  // =========================
+  // Load Task Data
+  // =========================
+
+  useEffect(() => {
+    if (!task) return;
+
+    setTitle(task.title || "");
+    setDescription(task.description || "");
+    setProjectId(
+      task.project_id
+        ? String(task.project_id)
+        : ""
+    );
+    setPriority(task.priority || "medium");
+    setStatus(task.status || "todo");
+  }, [task]);
+
+  // =========================
+  // Load Projects
+  // =========================
 
   useEffect(() => {
     const fetchProjects = async () => {
       try {
-        const response = await api.get("/projects/");
-        setProjects(response.data);
+        const response =
+          await api.get("/projects/");
 
-        if (response.data.length > 0) {
-          setProjectId(String(response.data[0].id));
-        }
+        setProjects(response.data);
       } catch (err) {
         console.error(err);
 
@@ -37,10 +74,14 @@ function CreateTaskModal({ onClose, onTaskCreated }) {
     fetchProjects();
   }, []);
 
+  // =========================
+  // Submit
+  // =========================
+
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    if (!taskTitle.trim()) {
+    if (!title.trim()) {
       setError("Task title is required.");
       return;
     }
@@ -54,21 +95,21 @@ function CreateTaskModal({ onClose, onTaskCreated }) {
       setLoading(true);
       setError("");
 
-      await api.post("/tasks/", {
-        title: taskTitle.trim(),
+      await api.put(`/tasks/${task.id}`, {
+        title: title.trim(),
         description: description.trim(),
-        status: "todo",
+        status,
         priority,
         project_id: Number(projectId),
       });
 
-      onTaskCreated();
+      onTaskUpdated();
     } catch (err) {
       console.error(err);
 
       setError(
         err.response?.data?.detail ||
-          "Unable to create task."
+          "Unable to update task."
       );
     } finally {
       setLoading(false);
@@ -77,27 +118,33 @@ function CreateTaskModal({ onClose, onTaskCreated }) {
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
+
       <div className="w-full max-w-md rounded-2xl border border-white/[0.1] bg-[#0b0d14] p-6 shadow-2xl shadow-black/50">
 
         {/* Header */}
         <div className="mb-6 flex items-center justify-between">
+
           <div>
+
             <h2 className="text-lg font-semibold text-white">
-              Create Task
+              Edit Task
             </h2>
 
             <p className="mt-1 text-xs text-slate-500">
-              Add a new task to your workspace.
+              Update your task details.
             </p>
+
           </div>
 
           <button
+            type="button"
             onClick={onClose}
             disabled={loading}
             className="rounded-lg p-2 text-slate-500 transition hover:bg-white/[0.06] hover:text-white disabled:opacity-50"
           >
             <X size={18} />
           </button>
+
         </div>
 
         {/* Error */}
@@ -107,28 +154,32 @@ function CreateTaskModal({ onClose, onTaskCreated }) {
           </div>
         )}
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form
+          onSubmit={handleSubmit}
+          className="space-y-4"
+        >
 
-          {/* Task title */}
+          {/* Title */}
           <div>
+
             <label className="mb-2 block text-xs font-medium text-slate-400">
               Task Title
             </label>
 
             <input
-              value={taskTitle}
+              value={title}
               onChange={(event) =>
-                setTaskTitle(event.target.value)
+                setTitle(event.target.value)
               }
-              placeholder="e.g. Build login page"
               disabled={loading}
               className="w-full rounded-xl border border-white/[0.08] bg-white/[0.04] px-4 py-3 text-sm text-slate-200 outline-none placeholder:text-slate-600 focus:border-indigo-500/40 disabled:opacity-50"
             />
+
           </div>
 
           {/* Description */}
           <div>
+
             <label className="mb-2 block text-xs font-medium text-slate-400">
               Description
             </label>
@@ -136,17 +187,20 @@ function CreateTaskModal({ onClose, onTaskCreated }) {
             <textarea
               value={description}
               onChange={(event) =>
-                setDescription(event.target.value)
+                setDescription(
+                  event.target.value
+                )
               }
-              placeholder="What needs to be done?"
               rows={3}
               disabled={loading}
               className="w-full resize-none rounded-xl border border-white/[0.08] bg-white/[0.04] px-4 py-3 text-sm text-slate-200 outline-none placeholder:text-slate-600 focus:border-indigo-500/40 disabled:opacity-50"
             />
+
           </div>
 
           {/* Project */}
           <div>
+
             <label className="mb-2 block text-xs font-medium text-slate-400">
               Project
             </label>
@@ -154,18 +208,19 @@ function CreateTaskModal({ onClose, onTaskCreated }) {
             <select
               value={projectId}
               onChange={(event) =>
-                setProjectId(event.target.value)
+                setProjectId(
+                  event.target.value
+                )
               }
-              disabled={loading || loadingProjects}
+              disabled={
+                loading ||
+                loadingProjects
+              }
               className="w-full rounded-xl border border-white/[0.08] bg-[#10131d] px-4 py-3 text-sm text-slate-200 outline-none focus:border-indigo-500/40 disabled:opacity-50"
             >
               {loadingProjects ? (
                 <option value="">
                   Loading projects...
-                </option>
-              ) : projects.length === 0 ? (
-                <option value="">
-                  No projects available
                 </option>
               ) : (
                 projects.map((project) => (
@@ -178,10 +233,12 @@ function CreateTaskModal({ onClose, onTaskCreated }) {
                 ))
               )}
             </select>
+
           </div>
 
           {/* Priority */}
           <div>
+
             <label className="mb-2 block text-xs font-medium text-slate-400">
               Priority
             </label>
@@ -189,15 +246,58 @@ function CreateTaskModal({ onClose, onTaskCreated }) {
             <select
               value={priority}
               onChange={(event) =>
-                setPriority(event.target.value)
+                setPriority(
+                  event.target.value
+                )
               }
               disabled={loading}
               className="w-full rounded-xl border border-white/[0.08] bg-[#10131d] px-4 py-3 text-sm text-slate-200 outline-none focus:border-indigo-500/40 disabled:opacity-50"
             >
-              <option value="high">High</option>
-              <option value="medium">Medium</option>
-              <option value="low">Low</option>
+              <option value="high">
+                High
+              </option>
+
+              <option value="medium">
+                Medium
+              </option>
+
+              <option value="low">
+                Low
+              </option>
             </select>
+
+          </div>
+
+          {/* Status */}
+          <div>
+
+            <label className="mb-2 block text-xs font-medium text-slate-400">
+              Status
+            </label>
+
+            <select
+              value={status}
+              onChange={(event) =>
+                setStatus(
+                  event.target.value
+                )
+              }
+              disabled={loading}
+              className="w-full rounded-xl border border-white/[0.08] bg-[#10131d] px-4 py-3 text-sm text-slate-200 outline-none focus:border-indigo-500/40 disabled:opacity-50"
+            >
+              <option value="todo">
+                Todo
+              </option>
+
+              <option value="in_progress">
+                In Progress
+              </option>
+
+              <option value="completed">
+                Completed
+              </option>
+            </select>
+
           </div>
 
           {/* Buttons */}
@@ -216,19 +316,23 @@ function CreateTaskModal({ onClose, onTaskCreated }) {
               type="submit"
               disabled={
                 loading ||
-                loadingProjects ||
-                projects.length === 0
+                loadingProjects
               }
               className="glow-button rounded-xl px-4 py-2.5 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {loading ? "Creating..." : "Create Task"}
+              {loading
+                ? "Saving..."
+                : "Save Changes"}
             </button>
 
           </div>
+
         </form>
+
       </div>
+
     </div>
   );
 }
 
-export default CreateTaskModal;
+export default EditTaskModal;
